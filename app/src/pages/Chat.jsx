@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useApp } from '../store/AppContext.jsx'
 
 const uid = () => Math.random().toString(36).slice(2) + Date.now().toString(36)
@@ -28,6 +28,13 @@ export default function Chat(){
   const [conflictMatches, setConflictMatches] = useState([])
 
   const fileInputRef = useRef(null)
+  const messagesContainerRef = useRef(null)
+  const messagesEndRef = useRef(null)
+
+  // auto-scroll to bottom on conversation change or new messages
+  useEffect(()=>{
+    try{ messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' }) }catch{}
+  },[selectedId, selected?.messages?.length])
 
   const startConversation = () => {
     setError('')
@@ -220,7 +227,7 @@ export default function Chat(){
                 <textarea className="w-full border rounded-xl p-2 text-sm mt-2 focus:outline-none focus:ring-2 focus:ring-emerald-500" rows={3} value={selected.brief||''} onChange={(e)=>setConversationBrief(selected.id, e.target.value)} />
               </details>
             </div>
-            <section className="overflow-auto bg-white/80 backdrop-blur supports-[backdrop-filter]:bg-white/70 rounded-2xl border border-white/60 p-4 space-y-4 min-h-0 shadow-sm">
+            <section className="overflow-auto bg-white/80 backdrop-blur supports-[backdrop-filter]:bg-white/70 rounded-2xl border border-white/60 p-4 space-y-4 min-h-0 shadow-sm" ref={messagesContainerRef}>
               {selected.messages.map(m => (
                 <Bubble key={m.id} role={m.role} content={m.content} ts={m.ts}
                   onCopy={()=>navigator.clipboard.writeText(m.content)}
@@ -256,6 +263,7 @@ export default function Chat(){
                     }catch(err){ alert(err.message) }
                   }} />
               ))}
+              <div ref={messagesEndRef} />
               {selected.messages.length===0 && <div className="text-sm text-slate-500">No messages yet. Add your message or the client's reply below.</div>}
             </section>
             <footer className="mt-3 grid grid-cols-2 gap-3">
@@ -378,6 +386,7 @@ function Bubble({ role, content, ts, onCopy, onEdit, onRegenerate }){
   const [showRegen, setShowRegen] = useState(false)
   const [regenHint, setRegenHint] = useState('')
   const [regenLoading, setRegenLoading] = useState(false)
+  const [copied, setCopied] = useState(false)
   const handleRegen = async () => {
     if(!onRegenerate) return
     setRegenLoading(true)
@@ -401,9 +410,10 @@ function Bubble({ role, content, ts, onCopy, onEdit, onRegenerate }){
           </div>
         )}
         <div className="mt-2 flex gap-3 text-xs opacity-80">
-          <button className="underline" onClick={onCopy}>Copy</button>
+          <button className="underline" onClick={()=>{ try{ onCopy?.() }finally{ setCopied(true); setTimeout(()=>setCopied(false), 1200) } }}>Copy</button>
           {!editing && <button className="underline" onClick={()=>setEditing(true)}>Edit</button>}
           {isAI && <button className="underline" onClick={()=>setShowRegen(v=>!v)}>{showRegen? 'Hide regen':'Regenerate'}</button>}
+          {copied && <span className="text-emerald-600" aria-live="polite">Copied</span>}
         </div>
         {isAI && showRegen && (
           <div className="mt-2 space-y-2">
