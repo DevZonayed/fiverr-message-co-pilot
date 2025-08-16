@@ -224,7 +224,8 @@ export default function Chat(){
                   onCopy={()=>navigator.clipboard.writeText(m.content)}
                   onEdit={(newText)=>updateMessage(selected.id, m.id, ()=>({ content: newText.trim() }))}
                   onRegenerate={async (extraInstruction)=>{
-                    if(!apiKey){ alert('Add API key in Settings'); return }
+                    const key = provider==='openai' ? (apiKeyOpenAI || apiKey) : provider==='gemini' ? apiKeyGemini : apiKeyClaude
+                    if(!key){ alert('Add your API key in Settings'); return }
                     const sysParts = []
                     if(identity?.trim()) sysParts.push(`Identity:\n${identity.trim()}`)
                     const appliedInstruction = selected.instruction || instruction
@@ -372,6 +373,13 @@ function Bubble({ role, content, ts, onCopy, onEdit, onRegenerate }){
   const [draft, setDraft] = useState(content)
   const [showRegen, setShowRegen] = useState(false)
   const [regenHint, setRegenHint] = useState('')
+  const [regenLoading, setRegenLoading] = useState(false)
+  const handleRegen = async () => {
+    if(!onRegenerate) return
+    setRegenLoading(true)
+    try{ await onRegenerate(regenHint) }catch{ /* surface handled upstream */ }
+    finally{ setRegenLoading(false) }
+  }
   return (
     <div className={`flex ${isMe? 'justify-end':'justify-start'}`}>
       <div className={`max-w-[80%] rounded-2xl p-3 text-sm shadow-sm border ${isMe? 'bg-slate-900 text-white': isClient? 'bg-white':'bg-emerald-50 border-emerald-200'}`}>
@@ -396,7 +404,7 @@ function Bubble({ role, content, ts, onCopy, onEdit, onRegenerate }){
         {isAI && showRegen && (
           <div className="mt-2 space-y-2">
             <input className="w-full border rounded p-2 text-xs" placeholder="Optional guidance for regeneration" value={regenHint} onChange={e=>setRegenHint(e.target.value)} />
-            <button className="px-2 py-1 rounded bg-emerald-600 text-white text-xs" onClick={()=>onRegenerate?.(regenHint)}>Regen now</button>
+            <button className="px-2 py-1 rounded bg-emerald-600 text-white text-xs disabled:opacity-50" onClick={handleRegen} disabled={regenLoading}>{regenLoading? 'Regenerating…':'Regen now'}</button>
           </div>
         )}
       </div>
@@ -439,7 +447,7 @@ async function callGemini({ apiKey, model, temperature, system, user }){
     generationConfig: { temperature }
   }
   const res = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
-  if(!res.ok){ let err=null; try{ err=await res.json() }catch{}; throw new Error(err?.error?.message || `Gemini error ${res.status}`) }
+  if(!res.ok){ let err=null; try{ err=await res.json() }catch{ /* ignore */ }; throw new Error(err?.error?.message || `Gemini error ${res.status}`) }
   const data = await res.json()
   const text = data?.candidates?.[0]?.content?.parts?.map(p=>p.text).join('').trim()
   if(!text) throw new Error('No content returned by model.')
@@ -460,7 +468,7 @@ async function callClaude({ apiKey, model, temperature, system, user }){
     headers: { 'Content-Type': 'application/json', 'x-api-key': apiKey, 'anthropic-version': '2023-06-01' },
     body: JSON.stringify(body),
   })
-  if(!res.ok){ let err=null; try{ err=await res.json() }catch{}; throw new Error(err?.error?.message || `Claude error ${res.status}`) }
+  if(!res.ok){ let err=null; try{ err=await res.json() }catch{ /* ignore */ }; throw new Error(err?.error?.message || `Claude error ${res.status}`) }
   const data = await res.json()
   const text = data?.content?.map(p=>p.text).join('').trim()
   if(!text) throw new Error('No content returned by model.')
