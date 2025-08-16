@@ -10,20 +10,69 @@ export default function Settings(){
     autosaveToFolder, setAutosaveToFolder,
     connectFolder, dirHandleRef,
     conversations,
+    provider, setProvider,
+    apiKeyOpenAI, setApiKeyOpenAI,
+    apiKeyGemini, setApiKeyGemini,
+    apiKeyClaude, setApiKeyClaude,
   } = useApp()
   return (
     <div className="max-w-2xl space-y-4">
       <h2 className="text-2xl font-semibold">Settings</h2>
-      <div>
-        <label className="text-xs font-medium text-slate-600">OpenAI API Key</label>
-        <input type="password" className="w-full border rounded p-2" placeholder="sk-... (stored only in memory)" value={apiKey} onChange={e=>setApiKey(e.target.value)} />
-        <p className="text-[11px] text-slate-500 mt-1">For production, proxy requests via your backend. Do not expose keys in client code.</p>
+      <div className="grid grid-cols-2 gap-3">
+        <div>
+          <label className="text-xs font-medium text-slate-600">Provider</label>
+          <select className="w-full border rounded p-2" value={provider} onChange={e=>setProvider(e.target.value)}>
+            <option value="openai">OpenAI</option>
+            <option value="gemini">Google Gemini</option>
+            <option value="claude">Anthropic Claude</option>
+          </select>
+          <p className="text-[11px] text-slate-500 mt-1">Choose your AI provider.</p>
+        </div>
+        <div>
+          <label className="text-xs font-medium text-slate-600">Model</label>
+          <select className="w-full border rounded p-2" value={model} onChange={e=>setModel(e.target.value)}>
+            {provider==='openai' && (
+              <>
+                <option value="gpt-4o-mini">gpt-4o-mini</option>
+                <option value="gpt-4o">gpt-4o</option>
+                <option value="gpt-4.1">gpt-4.1</option>
+                <option value="o4-mini">o4-mini</option>
+              </>
+            )}
+            {provider==='gemini' && (
+              <>
+                <option value="gemini-1.5-flash">gemini-1.5-flash</option>
+                <option value="gemini-1.5-pro">gemini-1.5-pro</option>
+              </>
+            )}
+            {provider==='claude' && (
+              <>
+                <option value="claude-3-haiku-20240307">claude-3-haiku-20240307</option>
+                <option value="claude-3-sonnet-20240229">claude-3-sonnet-20240229</option>
+                <option value="claude-3-opus-20240229">claude-3-opus-20240229</option>
+              </>
+            )}
+            <option value={model}>Custom: {model}</option>
+          </select>
+          <p className="text-[11px] text-slate-500 mt-1">Pick a preset or type your own model id.</p>
+          <input className="mt-1 w-full border rounded p-2 text-sm" value={model} onChange={e=>setModel(e.target.value)} placeholder="Custom model id" />
+        </div>
       </div>
-      <div>
-        <label className="text-xs font-medium text-slate-600">Model</label>
-        <input className="w-full border rounded p-2" value={model} onChange={e=>setModel(e.target.value)} />
-        <p className="text-[11px] text-slate-500 mt-1">Use a low-cost model (e.g., gpt-4o-mini). If a GPT‑5 mini model is available in your account, paste its exact id here.</p>
+      <div className="grid grid-cols-3 gap-3">
+        <div>
+          <label className="text-xs font-medium text-slate-600">OpenAI API Key</label>
+          <input type="password" className="w-full border rounded p-2" placeholder="sk-..." value={apiKeyOpenAI} onChange={e=>setApiKeyOpenAI(e.target.value)} />
+        </div>
+        <div>
+          <label className="text-xs font-medium text-slate-600">Gemini API Key</label>
+          <input type="password" className="w-full border rounded p-2" placeholder="AI..." value={apiKeyGemini} onChange={e=>setApiKeyGemini(e.target.value)} />
+        </div>
+        <div>
+          <label className="text-xs font-medium text-slate-600">Claude API Key</label>
+          <input type="password" className="w-full border rounded p-2" placeholder="sk-ant-..." value={apiKeyClaude} onChange={e=>setApiKeyClaude(e.target.value)} />
+        </div>
       </div>
+      <p className="text-[11px] text-slate-500">Keys are stored in IndexedDB locally. For production, proxy via your backend.</p>
       <div>
         <label className="text-xs font-medium text-slate-600">Temperature: {temperature}</label>
         <input type="range" min={0} max={1} step={0.05} value={temperature} onChange={e=>setTemperature(parseFloat(e.target.value))} />

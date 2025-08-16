@@ -12,6 +12,7 @@ export default function Chat(){
     identity,
     setConversationBrief,
     updateMessage,
+    provider, apiKeyOpenAI, apiKeyGemini, apiKeyClaude,
   } = useApp()
 
   const [clientName, setClientName] = useState('')
@@ -99,13 +100,19 @@ export default function Chat(){
   const handleGenerate = async () => {
     setError('')
     if(!selected){ setError('Select or start a conversation first.'); return }
-    if(!apiKey){ setError('Add your OpenAI API key in Settings.'); return }
+    const key = provider==='openai' ? (apiKeyOpenAI || apiKey) : provider==='gemini' ? apiKeyGemini : apiKeyClaude
+    if(!key){ setError('Add your API key in Settings.'); return }
 
     const sysParts = []
     if(identity?.trim()) sysParts.push(`Identity:\n${identity.trim()}`)
     const appliedInstruction = selected.instruction || instruction
     if(appliedInstruction?.trim()) sysParts.push(`Instruction:\n${appliedInstruction.trim()}`)
     if(selected.brief?.trim()) sysParts.push(`Brief:\n${selected.brief.trim()}`)
+    {
+      const now = new Date()
+      const tz = Intl.DateTimeFormat().resolvedOptions().timeZone
+      sysParts.push(`Current date/time: ${now.toISOString()} (local ${now.toLocaleString()}, ${tz})`)
+    }
     const sys = sysParts.join('\n\n')
     const transcript = selected.messages.map(m=>`${m.role==='me'?'ME':m.role==='client'?'CLIENT':'AI'}: ${m.content}`).join('\n')
     const userPrompt = [
@@ -125,7 +132,7 @@ export default function Chat(){
 
     setIsCallingAI(true)
     try{
-      const text = await callOpenAI({ apiKey, model, temperature, system: sys, user: userPrompt })
+      const text = await callAI({ provider, apiKeyOpenAI, apiKeyFallback: apiKey, apiKeyGemini, apiKeyClaude, model, temperature, system: sys, user: userPrompt })
       addMessage(selected.id,'ai',text)
     }catch(e){ setError(e?.message || String(e)) }
     finally{ setIsCallingAI(false) }
@@ -221,6 +228,11 @@ export default function Chat(){
                     if(appliedInstruction?.trim()) sysParts.push(`Instruction:\n${appliedInstruction.trim()}`)
                     if(selected.brief?.trim()) sysParts.push(`Brief:\n${selected.brief.trim()}`)
                     if(extraInstruction?.trim()) sysParts.push(`Additional guidance:\n${extraInstruction.trim()}`)
+                    {
+                      const now = new Date()
+                      const tz = Intl.DateTimeFormat().resolvedOptions().timeZone
+                      sysParts.push(`Current date/time: ${now.toISOString()} (local ${now.toLocaleString()}, ${tz})`)
+                    }
                     const sys = sysParts.join('\n\n')
                     const transcript = selected.messages.map(x=>`${x.role==='me'?'ME':x.role==='client'?'CLIENT':'AI'}: ${x.content}`).join('\n')
                     const userPrompt = [
@@ -233,7 +245,7 @@ export default function Chat(){
                       'Task: Rewrite the last AI draft more appropriately for the client.',
                     ].join('\n')
                     try{
-                      const text = await callOpenAI({ apiKey, model, temperature, system: sys, user: userPrompt })
+                      const text = await callAI({ provider, apiKeyOpenAI, apiKeyFallback: apiKey, apiKeyGemini, apiKeyClaude, model, temperature, system: sys, user: userPrompt })
                       updateMessage(selected.id, m.id, ()=>({ content: text }))
                     }catch(err){ alert(err.message) }
                   }} />
@@ -415,6 +427,48 @@ async function callOpenAI({ apiKey, model, temperature, system, user }){
   const text = data.choices?.[0]?.message?.content?.trim()
   if(!text) throw new Error('No content returned by model.')
   return text
+}
+
+async function callGemini({ apiKey, model, temperature, system, user }){
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent?key=${encodeURIComponent(apiKey)}`
+  const body = {
+    contents: [{ role: 'user', parts: [{ text: `${system}\n\n${user}` }] }],
+    generationConfig: { temperature }
+  }
+  const res = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
+  if(!res.ok){ let err=null; try{ err=await res.json() }catch{}; throw new Error(err?.error?.message || `Gemini error ${res.status}`) }
+  const data = await res.json()
+  const text = data?.candidates?.[0]?.content?.parts?.map(p=>p.text).join('').trim()
+  if(!text) throw new Error('No content returned by model.')
+  return text
+}
+
+async function callClaude({ apiKey, model, temperature, system, user }){
+  const url = 'https://api.anthropic.com/v1/messages'
+  const body = {
+    model,
+    max_tokens: 1024,
+    temperature,
+    system,
+    messages: [{ role: 'user', content: user }],
+  }
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'x-api-key': apiKey, 'anthropic-version': '2023-06-01' },
+    body: JSON.stringify(body),
+  })
+  if(!res.ok){ let err=null; try{ err=await res.json() }catch{}; throw new Error(err?.error?.message || `Claude error ${res.status}`) }
+  const data = await res.json()
+  const text = data?.content?.map(p=>p.text).join('').trim()
+  if(!text) throw new Error('No content returned by model.')
+  return text
+}
+
+async function callAI({ provider, apiKeyOpenAI, apiKeyFallback, apiKeyGemini, apiKeyClaude, model, temperature, system, user }){
+  if(provider==='openai') return callOpenAI({ apiKey: apiKeyOpenAI || apiKeyFallback, model, temperature, system, user })
+  if(provider==='gemini') return callGemini({ apiKey: apiKeyGemini, model, temperature, system, user })
+  if(provider==='claude') return callClaude({ apiKey: apiKeyClaude, model, temperature, system, user })
+  return callOpenAI({ apiKey: apiKeyOpenAI || apiKeyFallback, model, temperature, system, user })
 }
 
 
