@@ -80,7 +80,13 @@ export default function Instructions(){
                   {tpl.id!=='default' && <button className="text-xs text-rose-600 underline" onClick={()=>removeTemplate(tpl.id)}>Delete</button>}
                 </div>
               </div>
-              <div className="text-sm whitespace-pre-wrap text-slate-700">{tpl.content}</div>
+              <div className="text-sm text-slate-700">
+                <div className="text-slate-600 line-clamp-2 whitespace-pre-wrap">{tpl.content}</div>
+                <details className="mt-1">
+                  <summary className="text-xs underline cursor-pointer select-none">Show full</summary>
+                  <div className="mt-1 whitespace-pre-wrap">{tpl.content}</div>
+                </details>
+              </div>
             </div>
           ))}
           {instructionTemplates.length===0 && <div className="p-3 text-sm text-slate-500">No templates yet.</div>}

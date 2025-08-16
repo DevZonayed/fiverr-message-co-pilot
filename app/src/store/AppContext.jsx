@@ -35,6 +35,7 @@ export function AppProvider({ children }){
   const [apiKeyOpenAI, setApiKeyOpenAI] = useState('')
   const [apiKeyGemini, setApiKeyGemini] = useState('')
   const [apiKeyClaude, setApiKeyClaude] = useState('')
+  const [hasLoaded, setHasLoaded] = useState(false)
 
   useEffect(()=>{
     (async ()=>{
@@ -77,12 +78,13 @@ export function AppProvider({ children }){
           if(iraw){ const arr = JSON.parse(iraw); if(Array.isArray(arr)) setInstructionTemplates(arr) }
         }
       }catch{}
+      finally{ setHasLoaded(true) }
     })()
   },[])
 
-  useEffect(()=>{ (async ()=>{ try{ await bulkPut(stores.conversations, conversations) }catch{} })() },[conversations])
-  useEffect(()=>{ (async ()=>{ try{ await saveSettings({ model, temperature, identity, autosaveToFolder, provider, apiKeyOpenAI, apiKeyGemini, apiKeyClaude }) }catch{} })() },[model, temperature, identity, autosaveToFolder, provider, apiKeyOpenAI, apiKeyGemini, apiKeyClaude])
-  useEffect(()=>{ (async ()=>{ try{ await bulkPut(stores.templates, instructionTemplates) }catch{} })() },[instructionTemplates])
+  useEffect(()=>{ (async ()=>{ if(!hasLoaded) return; try{ await bulkPut(stores.conversations, conversations) }catch{} })() },[hasLoaded, conversations])
+  useEffect(()=>{ (async ()=>{ if(!hasLoaded) return; try{ await saveSettings({ model, temperature, identity, autosaveToFolder, provider, apiKeyOpenAI, apiKeyGemini, apiKeyClaude }) }catch{} })() },[hasLoaded, model, temperature, identity, autosaveToFolder, provider, apiKeyOpenAI, apiKeyGemini, apiKeyClaude])
+  useEffect(()=>{ (async ()=>{ if(!hasLoaded) return; try{ await bulkPut(stores.templates, instructionTemplates) }catch{} })() },[hasLoaded, instructionTemplates])
 
   // Optional autosave to folder via File System Access API
   useEffect(()=>{
