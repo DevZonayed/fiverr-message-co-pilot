@@ -43,25 +43,25 @@ export default function Instructions(){
   }
 
   return (
-    <div className="grid grid-cols-12 gap-4">
+    <div className="grid grid-cols-12 gap-6">
       <div className="col-span-12 lg:col-span-7 space-y-4">
-        <h2 className="text-2xl font-semibold">Instruction Templates</h2>
-        <div className="bg-white rounded-xl border p-4">
+        <h2 className="text-2xl font-semibold bg-gradient-to-r from-slate-900 to-emerald-700 bg-clip-text text-transparent">Instruction Templates</h2>
+        <div className="bg-white/70 backdrop-blur supports-[backdrop-filter]:bg-white/60 rounded-2xl border border-white/60 p-4">
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="text-xs font-medium text-slate-600">Template name</label>
-              <input className="w-full border rounded p-2 text-sm" value={name} onChange={e=>setName(e.target.value)} placeholder="e.g., Friendly upsell" />
+              <input className="w-full border rounded-xl p-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500" value={name} onChange={e=>setName(e.target.value)} placeholder="e.g., Friendly upsell" />
             </div>
             <div className="col-span-2">
               <label className="text-xs font-medium text-slate-600">Content</label>
-              <textarea className="w-full border rounded p-2 text-sm" rows={4} value={content} onChange={e=>setContent(e.target.value)} placeholder="How AI should think about the client..." />
+              <textarea className="w-full border rounded-xl p-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500" rows={4} value={content} onChange={e=>setContent(e.target.value)} placeholder="How AI should think about the client..." />
             </div>
           </div>
-          <div className="mt-3"><button className="px-3 py-1 rounded bg-slate-900 text-white text-sm" onClick={addTemplate}>Add template</button></div>
+          <div className="mt-3"><button className="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-sm" onClick={addTemplate}>Add template</button></div>
         </div>
         <div className="flex items-center gap-2">
-          <button className="px-3 py-1 rounded border text-sm" onClick={exportTemplates}>Export templates</button>
-          <label className="px-3 py-1 rounded border text-sm cursor-pointer">
+          <button className="px-3 py-1.5 rounded-lg border text-sm hover:bg-white/70" onClick={exportTemplates}>Export templates</button>
+          <label className="px-3 py-1.5 rounded-lg border text-sm cursor-pointer hover:bg-white/70">
             Import templates
             <input type="file" accept="application/json" className="hidden" onChange={importTemplates} />
           </label>
@@ -70,7 +70,7 @@ export default function Instructions(){
       </div>
 
       <div className="col-span-12 lg:col-span-5">
-        <div className="bg-white rounded-xl border divide-y">
+        <div className="bg-white/70 backdrop-blur supports-[backdrop-filter]:bg-white/60 rounded-2xl border border-white/60 divide-y shadow-sm">
           {instructionTemplates.map(tpl => (
             <div key={tpl.id} className="p-3 space-y-2">
               <div className="flex items-center justify-between">

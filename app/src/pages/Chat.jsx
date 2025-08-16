@@ -142,22 +142,24 @@ export default function Chat(){
   }
 
   return (
-    <div className="grid grid-cols-12 gap-4">
+    <div className="grid grid-cols-12 gap-6">
       <aside className="col-span-12 lg:col-span-4 xl:col-span-3 space-y-3">
-        <div className="flex items-center justify-between">
-          <h2 className="text-lg font-semibold">Conversations</h2>
-          <button className="text-sm underline" onClick={()=>setSelectedId(null)}>New</button>
+        <div className="bg-white/70 backdrop-blur supports-[backdrop-filter]:bg-white/60 rounded-2xl border border-white/60 shadow-sm p-3">
+          <div className="flex items-center justify-between">
+            <h2 className="text-lg font-semibold">Conversations</h2>
+            <button className="text-xs px-2 py-1 rounded-lg border hover:bg-white/80" onClick={()=>setSelectedId(null)}>New</button>
+          </div>
+          <div className="mt-2 flex gap-2">
+            <button className="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-sm shadow-sm" onClick={handleExportAll}>Export All</button>
+            <button className="px-3 py-1.5 rounded-lg border text-sm hover:bg-white/70" onClick={()=>fileInputRef.current?.click()}>Import</button>
+            <input ref={fileInputRef} type="file" accept="application/json" className="hidden" onChange={handleImport} />
+          </div>
         </div>
-        <div className="flex gap-2">
-          <button className="px-3 py-1 rounded bg-slate-900 text-white text-sm" onClick={handleExportAll}>Export All</button>
-          <button className="px-3 py-1 rounded border text-sm" onClick={()=>fileInputRef.current?.click()}>Import</button>
-          <input ref={fileInputRef} type="file" accept="application/json" className="hidden" onChange={handleImport} />
-        </div>
-        <div className="flex-1 overflow-auto divide-y bg-white rounded border max-h-[60vh]">
+        <div className="flex-1 overflow-auto divide-y bg-white/70 backdrop-blur supports-[backdrop-filter]:bg-white/60 rounded-2xl border border-white/60 shadow-sm max-h-[60vh]">
           {conversations.map(c=> (
-            <div key={c.id} className={`p-2 cursor-pointer hover:bg-slate-100 group ${selectedId===c.id? 'bg-emerald-50': ''}`} onClick={()=>setSelectedId(c.id)}>
-              <div className="flex items-center justify-between">
-                <div>
+            <div key={c.id} className={`p-3 cursor-pointer transition-colors group ${selectedId===c.id? 'bg-emerald-50/70':'hover:bg-slate-50/70'}`} onClick={()=>setSelectedId(c.id)}>
+              <div className="flex items-center justify-between gap-2">
+                <div className="min-w-0">
                   <div className="font-medium truncate">{c.clientName}</div>
                   <div className="text-xs text-slate-500 truncate">{c.projectTitle}</div>
                 </div>
@@ -168,7 +170,7 @@ export default function Chat(){
               </div>
             </div>
           ))}
-          {conversations.length===0 && <div className="text-xs text-slate-500 p-2">No conversations yet.</div>}
+          {conversations.length===0 && <div className="text-xs text-slate-500 p-3">No conversations yet.</div>}
         </div>
       </aside>
 
@@ -194,11 +196,11 @@ export default function Chat(){
 
         {selected && (
           <div className="grid grid-rows-[auto_auto_1fr_auto] h-[calc(100vh-6rem)] min-h-[500px]">
-            <header className="mb-2 bg-white/80 backdrop-blur supports-[backdrop-filter]:bg-white/70">
+            <header className="mb-2 bg-white/70 backdrop-blur supports-[backdrop-filter]:bg-white/60 rounded-xl border border-white/60 p-3">
               <div className="flex items-center gap-2 min-w-0">
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 min-w-0">
-                    <span className="text-base font-semibold truncate" title={selected.clientName}>{selected.clientName}</span>
+                    <span className="text-base font-semibold truncate bg-gradient-to-r from-slate-900 to-emerald-700 bg-clip-text text-transparent" title={selected.clientName}>{selected.clientName}</span>
                     <span className="text-slate-400">·</span>
                     <span className="text-sm text-slate-700 truncate" title={selected.projectTitle}>{selected.projectTitle}</span>
                   </div>
@@ -207,18 +209,18 @@ export default function Chat(){
               </div>
             </header>
             <div className="mb-2 grid grid-cols-2 gap-3">
-              <details className="rounded-lg border bg-white p-3">
-                <summary className="text-xs font-medium text-slate-600 cursor-pointer select-none">Instruction (how to think about client)</summary>
-                <textarea className="w-full border rounded-lg p-2 text-sm mt-2" rows={3} value={selected.instruction} onChange={(e)=>{
+              <details className="rounded-xl border border-white/60 bg-white/70 backdrop-blur supports-[backdrop-filter]:bg-white/60 p-3">
+                <summary className="text-xs font-medium text-slate-700 cursor-pointer select-none">Instruction (how to think about client)</summary>
+                <textarea className="w-full border rounded-xl p-2 text-sm mt-2 focus:outline-none focus:ring-2 focus:ring-emerald-500" rows={3} value={selected.instruction} onChange={(e)=>{
                   const v = e.target.value; setConversations(prev=>prev.map(c=>c.id===selected.id?{...c, instruction:v}:c))
                 }}/>
               </details>
-              <details className="rounded-lg border bg-white p-3">
-                <summary className="text-xs font-medium text-slate-600 cursor-pointer select-none">Brief (project requirement)</summary>
-                <textarea className="w-full border rounded-lg p-2 text-sm mt-2" rows={3} value={selected.brief||''} onChange={(e)=>setConversationBrief(selected.id, e.target.value)} />
+              <details className="rounded-xl border border-white/60 bg-white/70 backdrop-blur supports-[backdrop-filter]:bg-white/60 p-3">
+                <summary className="text-xs font-medium text-slate-700 cursor-pointer select-none">Brief (project requirement)</summary>
+                <textarea className="w-full border rounded-xl p-2 text-sm mt-2 focus:outline-none focus:ring-2 focus:ring-emerald-500" rows={3} value={selected.brief||''} onChange={(e)=>setConversationBrief(selected.id, e.target.value)} />
               </details>
             </div>
-            <section className="overflow-auto bg-white rounded-xl border p-4 space-y-4 min-h-0">
+            <section className="overflow-auto bg-white/80 backdrop-blur supports-[backdrop-filter]:bg-white/70 rounded-2xl border border-white/60 p-4 space-y-4 min-h-0 shadow-sm">
               {selected.messages.map(m => (
                 <Bubble key={m.id} role={m.role} content={m.content} ts={m.ts}
                   onCopy={()=>navigator.clipboard.writeText(m.content)}
@@ -262,7 +264,7 @@ export default function Chat(){
                 <Composer label="Client reply" value={clientDraft} onChange={setClientDraft} onAdd={()=>{ if(clientDraft.trim()){ addMessage(selected.id,'client',clientDraft); setClientDraft('') } }} />
               </div>
               <div className="col-span-2 flex items-center gap-3">
-                <button className="px-4 py-2 rounded-xl bg-emerald-600 text-white disabled:opacity-50" onClick={handleGenerate} disabled={isCallingAI}>{isCallingAI? 'Thinking…':'Generate next reply with AI'}</button>
+                <button className="px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white disabled:opacity-50 shadow-sm" onClick={handleGenerate} disabled={isCallingAI}>{isCallingAI? 'Thinking…':'Generate next reply with AI'}</button>
                 {error && <span className="text-xs text-rose-600">{error}</span>}
               </div>
             </footer>
@@ -276,18 +278,18 @@ export default function Chat(){
           <p className="text-sm text-slate-600 mb-4">Choose to continue an existing thread or start a new one.</p>
           <div className="space-y-2 max-h-48 overflow-auto">
             {conflictMatches.map(c => (
-              <div key={c.id} className="border rounded p-2 flex items-center justify-between">
+              <div key={c.id} className="border rounded-xl p-2 flex items-center justify-between bg-white/70">
                 <div>
                   <div className="font-medium">{c.projectTitle}</div>
                   <div className="text-xs text-slate-500">Started {new Date(c.createdAt).toLocaleString()}</div>
                 </div>
-                <button className="px-3 py-1 rounded border" onClick={()=>doAppendToExisting(c.id)}>Continue</button>
+                <button className="px-3 py-1.5 rounded-lg border hover:bg-white/80" onClick={()=>doAppendToExisting(c.id)}>Continue</button>
               </div>
             ))}
           </div>
           <div className="mt-4 flex justify-end gap-2">
-            <button className="px-3 py-1 rounded border" onClick={()=>setShowConflictModal(false)}>Cancel</button>
-            <button className="px-3 py-1 rounded bg-slate-900 text-white" onClick={doCreate}>Start New</button>
+            <button className="px-3 py-1.5 rounded-lg border" onClick={()=>setShowConflictModal(false)}>Cancel</button>
+            <button className="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white" onClick={doCreate}>Start New</button>
           </div>
         </Modal>
       )}
@@ -301,52 +303,54 @@ function NewConversationForm({ clientName, setClientName, projectTitle, setProje
       <h2 className="text-2xl font-semibold">Start a conversation</h2>
       <p className="text-sm text-slate-600">Provide the project requirement first, then a unique client name. Optionally add your opening message and/or their reply.</p>
 
-      <div>
-        <label className="text-xs font-medium text-slate-600">Project requirement / title</label>
-        <input className="w-full border rounded-lg p-2 text-sm" placeholder="e.g., Next.js SaaS dashboard with Stripe" value={projectTitle} onChange={e=>setProjectTitle(e.target.value)} />
-      </div>
-
-      <div>
-        <label className="text-xs font-medium text-slate-600">Client name (unique)</label>
-        <input className="w-full border rounded-lg p-2 text-sm" placeholder="e.g., AcmeCo | Sarah" value={clientName} onChange={e=>setClientName(e.target.value)} />
-      </div>
-
-      <div className="grid grid-cols-2 gap-3">
+      <div className="bg-white/70 backdrop-blur supports-[backdrop-filter]:bg-white/60 rounded-2xl border border-white/60 p-4 space-y-3">
         <div>
-          <label className="text-xs font-medium text-slate-600">Instruction template</label>
-          <select className="w-full border rounded-lg p-2 text-sm" value={selectedTemplateId} onChange={e=>setSelectedTemplateId(e.target.value)}>
-            <option value="">— None —</option>
-            {templates.map(t => (
-              <option key={t.id} value={t.id}>{t.name}</option>
-            ))}
-          </select>
+          <label className="text-xs font-medium text-slate-600">Project requirement / title</label>
+          <input className="w-full border rounded-xl p-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500" placeholder="e.g., Next.js SaaS dashboard with Stripe" value={projectTitle} onChange={e=>setProjectTitle(e.target.value)} />
         </div>
-        <div className="col-span-2">
-          <label className="text-xs font-medium text-slate-600">Instruction (how AI should think about the client)</label>
-          <textarea className="w-full border rounded-lg p-2 text-sm" rows={3} value={instruction} onChange={e=>setInstruction(e.target.value)} />
-          <p className="text-[11px] text-slate-500 mt-1">Tip: mention tone, constraints, and what to upsell or avoid.</p>
-        </div>
-      </div>
 
-      <div>
-        <label className="text-xs font-medium text-slate-600">Brief (project requirement details)</label>
-        <textarea className="w-full border rounded-lg p-2 text-sm" rows={4} value={brief} onChange={e=>setBrief(e.target.value)} placeholder="Paste the client brief here. If left empty, you can add it later or as messages." />
-      </div>
-
-      <div className="grid grid-cols-2 gap-3">
         <div>
-          <label className="text-xs font-medium text-slate-600">My message (optional)</label>
-          <textarea className="w-full border rounded-lg p-2 text-sm" rows={4} value={myDraft} onChange={e=>setMyDraft(e.target.value)} />
+          <label className="text-xs font-medium text-slate-600">Client name (unique)</label>
+          <input className="w-full border rounded-xl p-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500" placeholder="e.g., AcmeCo | Sarah" value={clientName} onChange={e=>setClientName(e.target.value)} />
         </div>
-        <div>
-          <label className="text-xs font-medium text-slate-600">Client reply (optional)</label>
-          <textarea className="w-full border rounded-lg p-2 text-sm" rows={4} value={clientDraft} onChange={e=>setClientDraft(e.target.value)} />
-        </div>
-      </div>
 
-      <div className="flex items-center gap-3">
-        <button className="px-4 py-2 rounded-xl bg-slate-900 text-white" onClick={onStart}>Create / Continue</button>
-        {error && <span className="text-xs text-rose-600">{error}</span>}
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <label className="text-xs font-medium text-slate-600">Instruction template</label>
+            <select className="w-full border rounded-xl p-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500" value={selectedTemplateId} onChange={e=>setSelectedTemplateId(e.target.value)}>
+              <option value="">— None —</option>
+              {templates.map(t => (
+                <option key={t.id} value={t.id}>{t.name}</option>
+              ))}
+            </select>
+          </div>
+          <div className="col-span-2">
+            <label className="text-xs font-medium text-slate-600">Instruction (how AI should think about the client)</label>
+            <textarea className="w-full border rounded-xl p-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500" rows={3} value={instruction} onChange={e=>setInstruction(e.target.value)} />
+            <p className="text-[11px] text-slate-500 mt-1">Tip: mention tone, constraints, and what to upsell or avoid.</p>
+          </div>
+        </div>
+
+        <div>
+          <label className="text-xs font-medium text-slate-600">Brief (project requirement details)</label>
+          <textarea className="w-full border rounded-xl p-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500" rows={4} value={brief} onChange={e=>setBrief(e.target.value)} placeholder="Paste the client brief here. If left empty, you can add it later or as messages." />
+        </div>
+
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <label className="text-xs font-medium text-slate-600">My message (optional)</label>
+            <textarea className="w-full border rounded-xl p-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500" rows={4} value={myDraft} onChange={e=>setMyDraft(e.target.value)} />
+          </div>
+          <div>
+            <label className="text-xs font-medium text-slate-600">Client reply (optional)</label>
+            <textarea className="w-full border rounded-xl p-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500" rows={4} value={clientDraft} onChange={e=>setClientDraft(e.target.value)} />
+          </div>
+        </div>
+
+        <div className="flex items-center gap-3">
+          <button className="px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm" onClick={onStart}>Create / Continue</button>
+          {error && <span className="text-xs text-rose-600">{error}</span>}
+        </div>
       </div>
     </div>
   )
@@ -354,11 +358,11 @@ function NewConversationForm({ clientName, setClientName, projectTitle, setProje
 
 function Composer({ label, value, onChange, onAdd }){
   return (
-    <div>
+    <div className="bg-white/70 backdrop-blur supports-[backdrop-filter]:bg-white/60 rounded-2xl border border-white/60 p-3">
       <label className="text-xs font-medium text-slate-600">{label}</label>
-      <textarea className="w-full border rounded-lg p-2 text-sm" rows={4} value={value} onChange={e=>onChange(e.target.value)} />
+      <textarea className="w-full border rounded-xl p-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500" rows={4} value={value} onChange={e=>onChange(e.target.value)} />
       <div className="mt-1 flex justify-between">
-        <button className="px-3 py-1 rounded bg-slate-900 text-white text-sm" onClick={onAdd}>Add</button>
+        <button className="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs" onClick={onAdd}>Add</button>
         <span className="text-xs text-slate-400 self-center">Saved locally</span>
       </div>
     </div>
@@ -382,17 +386,17 @@ function Bubble({ role, content, ts, onCopy, onEdit, onRegenerate }){
   }
   return (
     <div className={`flex ${isMe? 'justify-end':'justify-start'}`}>
-      <div className={`max-w-[80%] rounded-2xl p-3 text-sm shadow-sm border ${isMe? 'bg-slate-900 text-white': isClient? 'bg-white':'bg-emerald-50 border-emerald-200'}`}>
+      <div className={`max-w-[80%] rounded-2xl p-3 text-sm shadow-sm border ${isMe? 'bg-gradient-to-br from-slate-900 to-slate-800 text-white border-slate-800': isClient? 'bg-white/90 backdrop-blur border-white/60':'bg-emerald-50/80 border-emerald-200'}`}>
         <div className="text-[11px] uppercase tracking-wide mb-1 opacity-70">
           {isMe? 'Me': isClient? 'Client':'AI Draft'} · {new Date(ts).toLocaleString()}
         </div>
         {!editing && <div className="whitespace-pre-wrap">{content}</div>}
         {editing && (
           <div className="space-y-2">
-            <textarea className="w-full border rounded p-2 text-sm" rows={4} value={draft} onChange={e=>setDraft(e.target.value)} />
+            <textarea className="w-full border rounded p-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500" rows={4} value={draft} onChange={e=>setDraft(e.target.value)} />
             <div className="flex gap-2">
-              <button className="px-2 py-1 rounded bg-slate-900 text-white text-xs" onClick={()=>{ onEdit?.(draft); setEditing(false) }}>Save</button>
-              <button className="px-2 py-1 rounded border text-xs" onClick={()=>{ setDraft(content); setEditing(false) }}>Cancel</button>
+              <button className="px-2.5 py-1 rounded bg-emerald-600 hover:bg-emerald-700 text-white text-xs" onClick={()=>{ onEdit?.(draft); setEditing(false) }}>Save</button>
+              <button className="px-2.5 py-1 rounded border text-xs" onClick={()=>{ setDraft(content); setEditing(false) }}>Cancel</button>
             </div>
           </div>
         )}
@@ -403,8 +407,8 @@ function Bubble({ role, content, ts, onCopy, onEdit, onRegenerate }){
         </div>
         {isAI && showRegen && (
           <div className="mt-2 space-y-2">
-            <input className="w-full border rounded p-2 text-xs" placeholder="Optional guidance for regeneration" value={regenHint} onChange={e=>setRegenHint(e.target.value)} />
-            <button className="px-2 py-1 rounded bg-emerald-600 text-white text-xs disabled:opacity-50" onClick={handleRegen} disabled={regenLoading}>{regenLoading? 'Regenerating…':'Regen now'}</button>
+            <input className="w-full border rounded p-2 text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500" placeholder="Optional guidance for regeneration" value={regenHint} onChange={e=>setRegenHint(e.target.value)} />
+            <button className="px-2.5 py-1 rounded bg-emerald-600 hover:bg-emerald-700 text-white text-xs disabled:opacity-50" onClick={handleRegen} disabled={regenLoading}>{regenLoading? 'Regenerating…':'Regen now'}</button>
           </div>
         )}
       </div>
@@ -414,8 +418,8 @@ function Bubble({ role, content, ts, onCopy, onEdit, onRegenerate }){
 
 function Modal({ children, onClose }){
   return (
-    <div className="fixed inset-0 bg-black/30 flex items-center justify-center p-4 z-50">
-      <div className="bg-white rounded-2xl p-4 w-full max-w-lg shadow-xl border">
+    <div className="fixed inset-0 bg-black/40 flex items-center justify-center p-4 z-50">
+      <div className="bg-white/80 backdrop-blur supports-[backdrop-filter]:bg-white/70 rounded-2xl p-4 w-full max-w-lg shadow-2xl border border-white/60">
         <div className="flex justify-end"><button className="text-sm" onClick={onClose}>✕</button></div>
         {children}
       </div>
