@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useMemo, useRef, useState } from 'react'
 import { isFileSystemAPISupported, pickDirectory, writeAllConversations } from '../lib/fs.js'
-import { bulkPut, getAll, getSettings, saveSettings, stores } from '../lib/db.js'
+import { bulkPut, clear, getAll, getSettings, saveSettings, stores } from '../lib/db.js'
 
 const LS_KEYS = {
   conversations: 'fiverr_ai_conversations_v1',
@@ -82,9 +82,9 @@ export function AppProvider({ children }){
     })()
   },[])
 
-  useEffect(()=>{ (async ()=>{ if(!hasLoaded) return; try{ await bulkPut(stores.conversations, conversations) }catch{} })() },[hasLoaded, conversations])
+  useEffect(()=>{ (async ()=>{ if(!hasLoaded) return; try{ await clear(stores.conversations); if(conversations.length){ await bulkPut(stores.conversations, conversations) } }catch{} })() },[hasLoaded, conversations])
   useEffect(()=>{ (async ()=>{ if(!hasLoaded) return; try{ await saveSettings({ model, temperature, identity, autosaveToFolder, provider, apiKeyOpenAI, apiKeyGemini, apiKeyClaude }) }catch{} })() },[hasLoaded, model, temperature, identity, autosaveToFolder, provider, apiKeyOpenAI, apiKeyGemini, apiKeyClaude])
-  useEffect(()=>{ (async ()=>{ if(!hasLoaded) return; try{ await bulkPut(stores.templates, instructionTemplates) }catch{} })() },[hasLoaded, instructionTemplates])
+  useEffect(()=>{ (async ()=>{ if(!hasLoaded) return; try{ await clear(stores.templates); if(instructionTemplates.length){ await bulkPut(stores.templates, instructionTemplates) } }catch{} })() },[hasLoaded, instructionTemplates])
 
   // Optional autosave to folder via File System Access API
   useEffect(()=>{
