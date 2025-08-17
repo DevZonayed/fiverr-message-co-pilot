@@ -54,7 +54,13 @@ run_container() {
   resolve_user
   local image="$user/fiverr-copilot:$tag"
   echo "Running container on port $port"
-  docker rm -f fiverr-copilot || true
+  # Pull if the image is not present locally
+  if ! docker image inspect "$image" >/dev/null 2>&1; then
+    echo "Image $image not found locally. Pulling..."
+    docker pull "$image"
+  fi
+  # Remove existing container quietly if present
+  docker rm -f fiverr-copilot >/dev/null 2>&1 || true
   docker run -d --name fiverr-copilot -p "$port":80 --restart unless-stopped "$image"
 }
 
