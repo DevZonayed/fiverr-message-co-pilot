@@ -7,6 +7,7 @@ set -euo pipefail
 #   ./production/deploy.sh run     [dockerhub_user] [tag] [host_port]
 #   ./production/deploy.sh publish [dockerhub_user] [tag]            # multi-arch push (amd64+arm64)
 #   ./production/deploy.sh deploy  [dockerhub_user] [tag]            # build and push <tag> and latest
+#   ./production/deploy.sh stop                                      # stop/remove running container
 #
 # dockerhub_user resolution order:
 #   1) CLI arg
@@ -85,6 +86,15 @@ deploy_build_and_push() {
   docker push "$image_latest"
 }
 
+stop_container() {
+  echo "Stopping container: fiverr-copilot"
+  if docker rm -f fiverr-copilot >/dev/null 2>&1; then
+    echo "Stopped."
+  else
+    echo "Container not running."
+  fi
+}
+
 case "$cmd" in
   build)
     build_image ;;
@@ -96,9 +106,11 @@ case "$cmd" in
     publish_multiarch ;;
   deploy)
     deploy_build_and_push ;;
+  stop)
+    stop_container ;;
   *)
     echo "Unknown command: $cmd" >&2
-    echo "Commands: build, push, run, publish, deploy" >&2
+    echo "Commands: build, push, run, publish, deploy, stop" >&2
     exit 1 ;;
 esac
 
